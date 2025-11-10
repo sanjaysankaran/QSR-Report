@@ -101,16 +101,34 @@ class KissflowService:
         if kissflow_data.get("TC_Prepared_by") and isinstance(kissflow_data["TC_Prepared_by"], list):
             if len(kissflow_data["TC_Prepared_by"]) > 0 and kissflow_data["TC_Prepared_by"][0].get("Name"):
                 mapped_data.PreparedBy = kissflow_data["TC_Prepared_by"][0]["Name"]
-        
-        if kissflow_data.get("AssignedTo", {}).get("Name"):
-            mapped_data.TestedBy = kissflow_data["AssignedTo"]["Name"]
-        
-        # Developer mapping
+
+        # Handle AssignedTo field (could be dict or list)
+        assigned_to = kissflow_data.get("AssignedTo")
+        if assigned_to:
+            if isinstance(assigned_to, dict) and assigned_to.get("Name"):
+                mapped_data.TestedBy = assigned_to["Name"]
+            elif isinstance(assigned_to, list) and len(assigned_to) > 0 and assigned_to[0].get("Name"):
+                mapped_data.TestedBy = assigned_to[0]["Name"]
+
+        # Developer mapping - handle both dict and list formats
         developers = []
-        if kissflow_data.get("Frontend_Developer", {}).get("Name"):
-            developers.append(kissflow_data["Frontend_Developer"]["Name"])
-        if kissflow_data.get("Backend_Developer", {}).get("Name"):
-            developers.append(kissflow_data["Backend_Developer"]["Name"])
+
+        # Frontend Developer
+        frontend_dev = kissflow_data.get("Frontend_Developer")
+        if frontend_dev:
+            if isinstance(frontend_dev, dict) and frontend_dev.get("Name"):
+                developers.append(frontend_dev["Name"])
+            elif isinstance(frontend_dev, list) and len(frontend_dev) > 0 and frontend_dev[0].get("Name"):
+                developers.append(frontend_dev[0]["Name"])
+
+        # Backend Developer
+        backend_dev = kissflow_data.get("Backend_Developer")
+        if backend_dev:
+            if isinstance(backend_dev, dict) and backend_dev.get("Name"):
+                developers.append(backend_dev["Name"])
+            elif isinstance(backend_dev, list) and len(backend_dev) > 0 and backend_dev[0].get("Name"):
+                developers.append(backend_dev[0]["Name"])
+
         if developers:
             mapped_data.DevelopedBy = ", ".join(developers)
         
