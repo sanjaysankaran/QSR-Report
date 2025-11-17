@@ -52,8 +52,15 @@ class KissflowService:
             
             # Map Kissflow data to QSR format
             mapped_data = self._map_kissflow_to_qsr(kissflow_data)
+
+            # Enhance with test execution data
+            self._enhance_with_test_execution_data(mapped_data, item_id)
+
+            # Enhance with defect data
+            self._enhance_with_defect_data(mapped_data, item_id)
+
             missing_fields = self._identify_missing_fields(mapped_data)
-            
+
             return KissflowResponse(
                 success=True,
                 data=mapped_data,
@@ -296,26 +303,97 @@ class KissflowService:
             )
         ]
 
-        # Add Defect Data for Flow Lock feature
-        mapped_data.DefectData = [
-            Defect(defectId="FL-001", status="Closed", severity="High"),
-            Defect(defectId="FL-002", status="Closed", severity="Medium"),
-            Defect(defectId="FL-003", status="Closed", severity="Low"),
-            Defect(defectId="FL-004", status="Closed", severity="Medium"),
-            Defect(defectId="FL-005", status="Closed", severity="Low"),
-            Defect(defectId="FL-006", status="In Progress", severity="Medium"),
-            Defect(defectId="FL-007", status="Open", severity="Critical")
-        ]
+        # Add enhanced Defect Data using defect service
+        from app.services.defect_service import defect_service
+        mapped_data.DefectData = defect_service.get_defects_by_kissflow_id(item_id)
+
+        # Add enhanced Test Execution Data from test execution service
+        try:
+            from app.services.test_execution_service import test_execution_service
+            from app.models import TestBuild
+            feature = test_execution_service.get_feature_by_kissflow_id(item_id)
+            feature_cycles = test_execution_service.get_feature_cycles(feature.id)
+
+            # Convert feature cycles to TestBuild objects
+            enhanced_test_data = []
+            for cycle in feature_cycles.cycles:
+                enhanced_test_data.append(TestBuild(
+                    buildNumber=cycle.cycle,
+                    startDate=cycle.startDate[:10],  # Extract date part
+                    endDate=cycle.endDate[:10],
+                    totalDesigned=cycle.totalTests,
+                    totalExecuted=cycle.totalTests,
+                    totalPassed=cycle.passed,
+                    totalFailed=cycle.failed,
+                    passPercentage=round(cycle.passRate, 2),
+                    failPercentage=round(100 - cycle.passRate, 2),
+                    defectsFound=cycle.bugsFound
+                ))
+
+            # Replace the basic test execution data with enhanced data
+            mapped_data.TestExecutionData = enhanced_test_data
+
+        except Exception as e:
+            logger.warning(f"Could not enhance test execution data: {str(e)}")
+            # Keep the existing basic test data if enhancement fails
 
         missing_fields = self._identify_missing_fields(mapped_data)
-        
+
         logger.info(f"Returning mock data for item: {item_id}")
-        
+
         return KissflowResponse(
             success=True,
             data=mapped_data,
             missingFields=missing_fields
         )
+
+    def _enhance_with_test_execution_data(self, mapped_data: QsrData, item_id: str):
+        """
+        Enhance mapped QSR data with test execution data from test execution service
+        """
+        try:
+            from app.services.test_execution_service import test_execution_service
+            from app.models import TestBuild
+            feature = test_execution_service.get_feature_by_kissflow_id(item_id)
+            feature_cycles = test_execution_service.get_feature_cycles(feature.id)
+
+            # Convert feature cycles to TestBuild objects
+            enhanced_test_data = []
+            for cycle in feature_cycles.cycles:
+                enhanced_test_data.append(TestBuild(
+                    buildNumber=cycle.cycle,
+                    startDate=cycle.startDate[:10],  # Extract date part
+                    endDate=cycle.endDate[:10],
+                    totalDesigned=cycle.totalTests,
+                    totalExecuted=cycle.totalTests,
+                    totalPassed=cycle.passed,
+                    totalFailed=cycle.failed,
+                    passPercentage=round(cycle.passRate, 2),
+                    failPercentage=round(100 - cycle.passRate, 2),
+                    defectsFound=cycle.bugsFound
+                ))
+
+            # Set the enhanced test execution data
+            mapped_data.TestExecutionData = enhanced_test_data
+            logger.info(f"Enhanced QSR data with {len(enhanced_test_data)} test cycles")
+
+        except Exception as e:
+            logger.warning(f"Could not enhance test execution data for {item_id}: {str(e)}")
+            # Continue without enhancement if it fails
+
+    def _enhance_with_defect_data(self, mapped_data: QsrData, item_id: str):
+        """
+        Enhance mapped QSR data with defect data from defect service
+        """
+        try:
+            from app.services.defect_service import defect_service
+            enhanced_defects = defect_service.get_defects_by_kissflow_id(item_id)
+            mapped_data.DefectData = enhanced_defects
+            logger.info(f"Enhanced QSR data with {len(enhanced_defects)} defects")
+
+        except Exception as e:
+            logger.warning(f"Could not enhance defect data for {item_id}: {str(e)}")
+            # Continue without enhancement if it fails
 
 
 # Global service instance

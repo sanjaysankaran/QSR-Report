@@ -5,10 +5,15 @@ import os
 import logging
 from dotenv import load_dotenv
 
-from app.routers import qsr
+# Load environment variables FIRST before importing other modules
+import pathlib
+# Get the absolute path to .env file in the backend root directory
+backend_root = pathlib.Path(__file__).parent.parent
+env_path = backend_root / '.env'
+load_dotenv(dotenv_path=env_path)
 
-# Load environment variables
-load_dotenv()
+# Now import the routers after environment variables are loaded
+from app.routers import qsr, test_execution
 
 # Configure logging
 logging.basicConfig(
@@ -45,6 +50,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(qsr.router)
+app.include_router(test_execution.router)
 
 # Global exception handler
 @app.exception_handler(Exception)
