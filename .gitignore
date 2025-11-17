@@ -1,0 +1,39 @@
+# QSR Automation Project - Root .gitignore
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Environment variables (sensitive)
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+
+# Backup files
+*.backup
+*.bak
+
+# Documentation that might contain sensitive info
+**/PUBLIC_API_DOCUMENTATION*.md

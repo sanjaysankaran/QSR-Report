@@ -254,6 +254,59 @@ class KissflowService:
         
         # Map the mock data to QSR format using the same mapping function
         mapped_data = self._map_kissflow_to_qsr(mock_kissflow_data)
+
+        # Add Test Execution Data for Flow Lock feature
+        from app.models import TestBuild, Defect
+        mapped_data.TestExecutionData = [
+            TestBuild(
+                buildNumber=1,
+                startDate="2025-11-01",
+                endDate="2025-11-03",
+                totalDesigned=45,
+                totalExecuted=42,
+                totalPassed=35,
+                totalFailed=7,
+                passPercentage=83.33,
+                failPercentage=16.67,
+                defectsFound=7
+            ),
+            TestBuild(
+                buildNumber=2,
+                startDate="2025-11-05",
+                endDate="2025-11-07",
+                totalDesigned=45,
+                totalExecuted=45,
+                totalPassed=40,
+                totalFailed=5,
+                passPercentage=88.89,
+                failPercentage=11.11,
+                defectsFound=5
+            ),
+            TestBuild(
+                buildNumber=3,
+                startDate="2025-11-08",
+                endDate="2025-11-10",
+                totalDesigned=45,
+                totalExecuted=45,
+                totalPassed=43,
+                totalFailed=2,
+                passPercentage=95.56,
+                failPercentage=4.44,
+                defectsFound=2
+            )
+        ]
+
+        # Add Defect Data for Flow Lock feature
+        mapped_data.DefectData = [
+            Defect(defectId="FL-001", status="Closed", severity="High"),
+            Defect(defectId="FL-002", status="Closed", severity="Medium"),
+            Defect(defectId="FL-003", status="Closed", severity="Low"),
+            Defect(defectId="FL-004", status="Closed", severity="Medium"),
+            Defect(defectId="FL-005", status="Closed", severity="Low"),
+            Defect(defectId="FL-006", status="In Progress", severity="Medium"),
+            Defect(defectId="FL-007", status="Open", severity="Critical")
+        ]
+
         missing_fields = self._identify_missing_fields(mapped_data)
         
         logger.info(f"Returning mock data for item: {item_id}")

@@ -1,0 +1,71 @@
+# QSR Backend - FastAPI .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+venv_*/
+.venv/
+env/
+.env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.staging
+
+# FastAPI / Uvicorn
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+
+# Documentation with potentially sensitive info
+PUBLIC_API_DOCUMENTATION*.md
+
+# Test files
+test_*.py
+*_test.py
+pytest.ini
